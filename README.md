@@ -1,6 +1,6 @@
 # Shivanu-MVP-N8N
 
-## Demo & Videos
+## Demo & Resources
 
 - [Demo Video & Resources](https://drive.google.com/drive/folders/18WQfxo8ZqHrcvar6dX12l4mOtBR7Xo4y?usp=sharing)
 
