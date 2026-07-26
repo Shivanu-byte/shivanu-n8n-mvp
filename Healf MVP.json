@@ -1,0 +1,942 @@
+{
+  "name": "Healf MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -336,
+        -960
+      ],
+      "id": "01044b34-db97-4a4c-a3da-f61b4db89d96",
+      "name": "When chat message received",
+      "webhookId": "3c9a977f-a347-44f8-a680-268704b19065"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.chatInput || \"\";\n\n// Match the first URL\nconst urlMatch = input.match(/https?:\\/\\/[^\\s]+/);\nconst url = urlMatch ? urlMatch[0] : \"\";\n\n// Remove the URL from the original text\nconst question = input\n  .replace(url, \"\")\n  .replace(/\\n+/g, \" \")\n  .replace(/\\s+/g, \" \")\n  .trim();\n\nreturn [\n  {\n    json: {\n      url,\n      question\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -960
+      ],
+      "id": "fd6f9b81-eeb7-45b6-82ab-ec07e69827ff",
+      "name": "Differentiate question and URL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a5a04c60-0f4c-4d1e-bc5f-79218bebea09",
+              "leftValue": "={{ $json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        -960
+      ],
+      "id": "988bda5f-1c51-48cc-8d7b-66b7a1b2bcf5",
+      "name": "If product URl is provided?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a5a04c60-0f4c-4d1e-bc5f-79218bebea09",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        -720
+      ],
+      "id": "bec61da6-a0af-4646-842f-74f0ca6cef34",
+      "name": "If same session ID"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "gYBAEI0oXWMaGaRH",
+          "mode": "list",
+          "cachedResultName": "ContextManager",
+          "cachedResultUrl": "/projects/yjCrWY7mMGucMCHw/datatables/gYBAEI0oXWMaGaRH"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sessionID": "={{ $('When chat message received').item.json.sessionId }}",
+            "product_url": "={{ $('Differentiate question and URL').item.json.url }}",
+            "prooduct_page_content": "={{ $('Extract the merged info').item.json.imageAnalysis }}\n{{ $('Extract the merged info').item.json.textAnalysis }}",
+            "last_user_message": "={{ $('Differentiate question and URL').item.json.question }}",
+            "last_agent_reply": "={{ $('Reply user\\'s first query').item.json.content.parts[0].text }}",
+            "chat_summary": "={{ $json.content.parts[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sessionID",
+              "displayName": "sessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "product_url",
+              "displayName": "product_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "prooduct_page_content",
+              "displayName": "prooduct_page_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_user_message",
+              "displayName": "last_user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_agent_reply",
+              "displayName": "last_agent_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_summary",
+              "displayName": "chat_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2656,
+        -992
+      ],
+      "id": "aca0dbf7-b394-40a5-90d1-322b84790d4e",
+      "name": "Insert product data for context management"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "gYBAEI0oXWMaGaRH",
+          "mode": "list",
+          "cachedResultName": "ContextManager",
+          "cachedResultUrl": "/projects/yjCrWY7mMGucMCHw/datatables/gYBAEI0oXWMaGaRH"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sessionID",
+              "keyValue": "={{ $('When chat message received').item.json.sessionId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -720
+      ],
+      "id": "1cb3185c-0231-47db-8d87-f0baf3fd099e",
+      "name": "Get last saved product details if session ID is same",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Differentiate question and URL').item.json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json,text/plain,*/*"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-GB,en;q=0.9"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 20
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        -976
+      ],
+      "id": "5b57a6b4-1064-485d-9e82-bbe792fdef36",
+      "name": "Ectract Product Information"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data;\n\n// Remove style and noscript blocks\nlet text = html\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, \" \")\n  .replace(/<noscript[\\s\\S]*?<\\/noscript>/gi, \" \");\n\n// Remove all script tags EXCEPT application/ld+json\ntext = text.replace(\n  /<script\\b(?![^>]*type=[\"']application\\/ld\\+json[\"'])[^>]*>[\\s\\S]*?<\\/script>/gi,\n  \" \"\n);\n\n// Remove HTML tags but keep the contents inside\ntext = text.replace(/<\\/?[^>]+>/g, \" \");\n\n// Decode common HTML entities\nconst entities = {\n  \"&nbsp;\": \" \",\n  \"&amp;\": \"&\",\n  \"&quot;\": '\"',\n  \"&#39;\": \"'\",\n  \"&apos;\": \"'\",\n  \"&lt;\": \"<\",\n  \"&gt;\": \">\",\n};\n\nfor (const [entity, value] of Object.entries(entities)) {\n  text = text.split(entity).join(value);\n}\n\n// Remove URLs\ntext = text.replace(/https?:\\/\\/\\S+/g, \" \");\n\n// Remove long hexadecimal hashes\ntext = text.replace(/\\b[a-f0-9]{16,}\\b/gi, \" \");\n\n// Keep readable characters INCLUDING JSON punctuation\ntext = text.replace(/[^\\w\\s.,:;!?%&'\"\\/(){}\\[\\]-]/g, \" \");\n\n// Collapse whitespace\ntext = text.replace(/\\s+/g, \" \").trim();\n\nreturn [{\n  json: {\n    cleanedText: text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -976
+      ],
+      "id": "645e8917-3d13-4be0-9f26-e6aa8854ed91",
+      "name": "Clean extracted text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an information extraction engine.\n\nExtract the product information into a JSON object.\n\nInclude every product-specific section you find.\n\nDo not invent fields that are not present.\n\nDO not use 'json' or anything else in output other than required JSON\n\nReturn only valid JSON.\nWebpage Text:\n\n{{ $json.cleanedText }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        -976
+      ],
+      "id": "73ee1b36-b025-45b0-a3c2-ff7d508e6f30",
+      "name": "Extract Product Info",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are the Healf Product Assistant, answering a shopper's first question about a\nspecific product on healf.com.\n\nYou have two inputs for this turn:\n- PRODUCT INFO: baseline structured data about the product (title, price, category,\n  description, variants, etc.)\n- LAST USER MESSAGE: what the shopper just asked\n\nYOUR JOB\nAssess whichever part(s) of the product page the question actually calls for - the\nquality or clarity of the description, whether reviews exist and what they say, how\ncomplete the ingredient/nutrition information is, SEO signals (title clarity, meta\ndescription, structured data), pricing or variant clarity, or anything else\nrelevant. Don't run through a fixed checklist - respond to what's actually being\nasked, drawing on only as many of these angles as the question needs.\n\nGROUNDING RULES\n1. Answer only from PRODUCT INFO and AGENT MESSAGE. Never invent prices,\n   ingredients, specifications, review content, or ratings that aren't in those\n   inputs.\n2. If something the user asked about isn't present in your inputs (no ingredient\n   list was found, no reviews were retrieved), say that plainly instead of guessing.\n   For ingredients or nutrition specifically, don't fill a gap with a\n   plausible-sounding guess - that matters for the shopper's safety.\n3. If PRODUCT INFO and AGENT MESSAGE conflict, prefer AGENT MESSAGE for anything\n   specific to this question, since it was retrieved to answer it.\n4. Stay focused on this product and Healf's offerings. For unrelated questions,\n   answer briefly if it's easy, otherwise say you're focused on this product and\n   invite them to ask about it.\n5. You are not a medical professional. For questions about health outcomes,\n   suitability for a medical condition, or dosage beyond what's on the product page,\n   share what the page states and suggest checking with a healthcare provider -\n   don't give personal medical advice.\n\nSTYLE\n- This is the first message in the conversation - get straight to answering, no\n  unnecessary greeting or preamble.\n- Reference the product by name.\n- Be concise and specific; use a short list only if it genuinely aids clarity.\n- Helpful, neutral shopping-assistant tone - not salesy, not overly hedged.\n\n---\n\nProduct Information:\n{{ $json.imageAnalysis }}\n{{ $json.textAnalysis }}\n\nUser Question:\n{{ $('Differentiate question and URL').item.json.question }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        -992
+      ],
+      "id": "f97b6ed9-f1ae-4e5c-a86f-8bd679ee539a",
+      "name": "Reply user's first query",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are the Healf Product Assistant, continuing an ongoing conversation with a\nshopper about a specific product on healf.com.\n\nYou have four inputs for this turn:\n- CHAT SUMMARY: what's been covered in this conversation so far\n- PRODUCT INFO: baseline structured data about the product\n- AGENT MESSAGE: information retrieved specifically to help answer the shopper's\n  latest question\n- LAST USER MESSAGE: what the shopper just asked\n\nYOUR JOB\nAssess whichever part(s) of the product page the latest question calls for -\ndescription quality, reviews, ingredient/nutrition completeness, SEO signals,\npricing/variant clarity, or anything else relevant. Don't run through a fixed\nchecklist - respond to what's actually being asked, drawing on only as many of\nthese angles as needed.\n\nUSING THE CHAT SUMMARY\n- Read it before answering so you don't repeat ground already covered, unless the\n  shopper is explicitly asking again or asking you to expand on it.\n- Answer as a natural continuation - reference earlier parts of the conversation\n  where relevant (\"as for the ingredients you asked about...\") without\n  re-summarizing the whole thread.\n- If the new question conflicts with or revises something discussed earlier,\n  address that directly rather than ignoring the inconsistency.\n- CHAT SUMMARY is for continuity only, never for facts about the product - always\n  get product facts from PRODUCT INFO / AGENT MESSAGE, since the summary can be\n  lossy and the product data may have changed since it was last checked.\n\nGROUNDING RULES\n1. Answer only from PRODUCT INFO and AGENT MESSAGE. Never invent prices,\n   ingredients, specifications, review content, or ratings.\n2. If something the user asked about isn't present in AGENT MESSAGE or PRODUCT\n   INFO, say so plainly rather than guessing - especially for ingredients or\n   nutrition.\n3. If AGENT MESSAGE conflicts with something implied in CHAT SUMMARY (the product\n   changed since it was last discussed), trust the freshly retrieved AGENT MESSAGE\n   and note the update to the shopper.\n4. Stay focused on this product and Healf's offerings; redirect politely if asked\n   something unrelated.\n5. You are not a medical professional. For questions about health outcomes,\n   suitability for a medical condition, or dosage beyond what's on the product page,\n   share what the page states and suggest checking with a healthcare provider.\n\nSTYLE\n- No need to re-greet the shopper; keep the same conversational thread.\n- Reference the product by name if it's been a few turns.\n- Be concise and specific; use a short list only if it genuinely aids clarity.\n- Helpful, neutral shopping-assistant tone - not salesy, not overly hedged.\n\n---\nProduct Information:\n{{ $('Get last saved product details if session ID is same').item.json.prooduct_page_content }}\n\nPrevious User Message:\n{{ $('Get last saved product details if session ID is same').item.json.last_user_message }}\n\nPrevious Assistant Message:\n{{ $('Get last saved product details if session ID is same').item.json.last_agent_reply }}\n\nCurrent User Message:\n{{ $('Differentiate question and URL').item.json.question }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        -736
+      ],
+      "id": "2592a7df-1d54-43e6-989f-4e93583e0f91",
+      "name": "Carry on the conversation",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "Hey there, I don't have a product loaded yet. Please send a Healf product URL, and I'll analyse it so you can ask questions about the product.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        -560
+      ],
+      "id": "d38d3a95-b874-4efd-8f92-47267ae2c777",
+      "name": "Response for no product information",
+      "webhookId": "153eb070-0e6b-4acf-b68c-384798e40e1c"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        1136,
+        -736
+      ],
+      "id": "31d11306-4c17-4568-8943-fbf707b3ff74",
+      "name": "Continued chat response",
+      "webhookId": "153eb070-0e6b-4acf-b68c-384798e40e1c"
+    },
+    {
+      "parameters": {
+        "message": "={{ $('Reply user\\'s first query').item.json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        2048,
+        -992
+      ],
+      "id": "b659fd3f-fb5c-4bc4-95a9-4b0c74ed0ca5",
+      "name": "First time query response",
+      "webhookId": "ded579c3-97e7-4735-9498-ec520a8ad4be"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are maintaining a conversation summary for a Product Intelligence Assistant.\n\n\nRules:\n- Preserve important context that may be useful for future questions.\n- Include topics discussed, user preferences, comparisons, decisions, and unresolved questions.\n- Remove redundant or outdated information.\n- Keep the summary concise (maximum 150 words).\n- Do not include greetings or casual conversation.\n- Write in plain English.\n- Return ONLY the created summary.\n\n\nLatest User Message:\n{{ $('Differentiate question and URL').item.json.question }}\n\nLatest Assistant Response:\n{{ $json.chatInput }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        2304,
+        -992
+      ],
+      "id": "079d44af-9b97-4756-a5a3-327602804903",
+      "name": "Generate chat summary",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "gYBAEI0oXWMaGaRH",
+          "mode": "list",
+          "cachedResultName": "ContextManager",
+          "cachedResultUrl": "/projects/yjCrWY7mMGucMCHw/datatables/gYBAEI0oXWMaGaRH"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_user_message": "={{ $('Differentiate question and URL').item.json.question }}",
+            "chat_summary": "={{ $json.content.parts[0].text }}",
+            "last_agent_reply": "={{ $('Carry on the conversation').item.json.content.parts[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sessionID",
+              "displayName": "sessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "product_url",
+              "displayName": "product_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "prooduct_page_content",
+              "displayName": "prooduct_page_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_user_message",
+              "displayName": "last_user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_agent_reply",
+              "displayName": "last_agent_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_summary",
+              "displayName": "chat_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        -736
+      ],
+      "id": "e06914a3-8ad2-405b-8c5f-573b33db696a",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are maintaining a conversation summary for a Product Intelligence Assistant.\n\nUpdate the existing summary using the latest conversation.\n\nRules:\n- Preserve important context that may be useful for future questions.\n- Include topics discussed, user preferences, comparisons, decisions, and unresolved questions.\n- Remove redundant or outdated information.\n- Keep the summary concise (maximum 150 words).\n- Do not include greetings or casual conversation.\n- Write in plain English.\n- Return ONLY the updated summary.\n\nCurrent Summary:\n{{ $('Get last saved product details if session ID is same').item.json.chat_summary }}\n\nLatest User Message:\n{{ $('Differentiate question and URL').item.json.question }}\n\nLatest Assistant Response:\n{{ $('Carry on the conversation').item.json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        -736
+      ],
+      "id": "179707a1-744a-40e4-ad7a-bd6947929f72",
+      "name": "Update chat summary",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data;\n\n// Extract all Shopify image URLs embedded in Next.js imageSrcSet\nconst regex = /https%3A%2F%2Fcdn\\.shopify\\.com%2F[^\"&\\s]+/gi;\n\nconst matches = html.match(regex) || [];\n\n// Decode URLs\nlet urls = matches.map(url => decodeURIComponent(url));\n\n// Remove query parameters\nurls = urls.map(url => url.split(\"?\")[0]);\n\n// Remove duplicates\nurls = [...new Set(urls)];\n\n// Ignore non-product assets\nconst excludePatterns = [\n  \"PDP-promise\",\n  \"pdp-faqs\",\n  \"logo\",\n  \"icon\",\n  \"payment\",\n  \"trust\",\n  \"banner\",\n  \"hero\",\n  \"social\",\n  \"facebook\",\n  \"instagram\",\n  \"twitter\",\n  \"youtube\",\n  \"favicon\",\n  \"placeholder\",\n  \"spinner\",\n  \"loading\"\n];\n\nconst productImages = urls.filter(url => {\n  const lower = url.toLowerCase();\n  return !excludePatterns.some(pattern => lower.includes(pattern.toLowerCase()));\n});\n\n// Return as an array\nreturn [{\n  json: {\n    productImages\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -1216
+      ],
+      "id": "da266ff0-f341-4d46-863e-43769f8a4029",
+      "name": "Extract Product Image URL(s)"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.5-flash"
+        },
+        "text": "=Extract information from the images",
+        "imageUrls": "={{ $json.imageUrls }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        -1216
+      ],
+      "id": "2ade004c-9244-42a7-b30c-42214ed42b94",
+      "name": "Get Image descriptions",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vJjcMAIVQXcIhYn8",
+          "name": "Shivanu Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    imageUrls: $json.productImages.join(\",\")\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -1216
+      ],
+      "id": "5aedf5ec-f60b-4eeb-be68-d3ab3d9654e7",
+      "name": "Merge URL(s)"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        -992
+      ],
+      "id": "eeb9515c-0138-450b-82f8-f2417223d169",
+      "name": "Merged Product Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn [\n  {\n    json: {\n      imageAnalysis: items[0].json.content.parts[0].text,\n      textAnalysis: items[1].json.content.parts[0].text\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        -992
+      ],
+      "id": "fdd458f6-ada5-4149-96ff-6732b3833c90",
+      "name": "Extract the merged info"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Differentiate question and URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Differentiate question and URL": {
+      "main": [
+        [
+          {
+            "node": "If product URl is provided?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If product URl is provided?": {
+      "main": [
+        [
+          {
+            "node": "Ectract Product Information",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get last saved product details if session ID is same",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert product data for context management": {
+      "main": [
+        []
+      ]
+    },
+    "Get last saved product details if session ID is same": {
+      "main": [
+        [
+          {
+            "node": "If same session ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ectract Product Information": {
+      "main": [
+        [
+          {
+            "node": "Clean extracted text",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Product Image URL(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean extracted text": {
+      "main": [
+        [
+          {
+            "node": "Extract Product Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Product Info": {
+      "main": [
+        [
+          {
+            "node": "Merged Product Info",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If same session ID": {
+      "main": [
+        [
+          {
+            "node": "Carry on the conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response for no product information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply user's first query": {
+      "main": [
+        [
+          {
+            "node": "First time query response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carry on the conversation": {
+      "main": [
+        [
+          {
+            "node": "Continued chat response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response for no product information": {
+      "main": [
+        []
+      ]
+    },
+    "First time query response": {
+      "main": [
+        [
+          {
+            "node": "Generate chat summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate chat summary": {
+      "main": [
+        [
+          {
+            "node": "Insert product data for context management",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continued chat response": {
+      "main": [
+        [
+          {
+            "node": "Update chat summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update chat summary": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Product Image URL(s)": {
+      "main": [
+        [
+          {
+            "node": "Merge URL(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image descriptions": {
+      "main": [
+        [
+          {
+            "node": "Merged Product Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge URL(s)": {
+      "main": [
+        [
+          {
+            "node": "Get Image descriptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Product Info": {
+      "main": [
+        [
+          {
+            "node": "Extract the merged info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract the merged info": {
+      "main": [
+        [
+          {
+            "node": "Reply user's first query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "be5dd587-4fcc-4759-ae4d-eef8d80fe1e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb623358f2b3350be922da60bdc220aa07af992277acce7cffc9c83d5ff4332c"
+  },
+  "nodeGroups": [],
+  "id": "zjwMu3Czd8RcsS5E",
+  "tags": []
+}
